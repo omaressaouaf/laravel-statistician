@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Traits\Conditionable;
 use Omaressaouaf\LaravelStatistician\Exceptions\InvalidSourceForStatisticianException;
 
-abstract class Statistician
+abstract class BaseStatistician
 {
     use Conditionable;
 
@@ -82,34 +82,12 @@ abstract class Statistician
         return $this;
     }
 
-    private function shouldUseCaching(Source $source): bool
+    protected function shouldUseCaching(Source $source): bool
     {
         return ($this->cacheExpirationDate || Cache::has($source->getCacheKey()))
             && ! $this->startDate
             && ! $this->endDate;
     }
 
-    public function get(): array
-    {
-        $stats = [];
-
-        /**
-         * @var Source
-         */
-        foreach ($this->sources as $source) {
-            $stats[$source->getKey()] = $this->shouldUseCaching($source)
-                ? Cache::remember(
-                    $source->getCacheKey(),
-                    $this->cacheExpirationDate ?? today()->endOfMonth(),
-                    fn() => $this->handle($source)
-                )
-                : $this->handle($source);
-        }
-
-        return $stats;
-    }
-
     abstract public function sourceClass(): string;
-
-    abstract protected function handle(Source $source): mixed;
 }
