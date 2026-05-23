@@ -18,6 +18,6 @@ class AggregateSource extends Source
 
     protected function defaultKey(): string
     {
-        return Str::snake($this->builder->from) . '_' . Str::snake($this->aggregate);
+        return Str::snake($this->builder->from).'_'.$this->aggregate->value;
     }
 }

@@ -21,7 +21,7 @@ abstract class OneQueryStatistician extends BaseStatistician
                 ? $this->getSourceStatsFromCache($source)
                 : $this->handle($source, $result);
 
-            if (!$this->isSourceStatsCached($source)) {
+            if (! $this->isSourceStatsCached($source)) {
                 $this->putSourceStatsToCache($source, $sourceStats);
             }
 
@@ -34,6 +34,7 @@ abstract class OneQueryStatistician extends BaseStatistician
     private function runQuery(): Collection
     {
         $builder = DB::query();
+        $hasQueries = false;
 
         /**
          * @var Source
@@ -41,9 +42,14 @@ abstract class OneQueryStatistician extends BaseStatistician
         foreach ($this->sources as $source) {
             if ($this->isSourceStatsCached($source)) {
                 continue;
-            };
+            }
 
             $builder = $this->buildQuery($source, $builder);
+            $hasQueries = true;
+        }
+
+        if (! $hasQueries) {
+            return collect([(object) []]);
         }
 
         return $builder->get();

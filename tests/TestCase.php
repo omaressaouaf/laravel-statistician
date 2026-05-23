@@ -13,7 +13,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         parent::setUp();
 
-        // $this->loadMigrationsFrom(__DIR__.'/Migrations');
+        $this->loadMigrationsFrom(__DIR__.'/Migrations');
     }
 
     protected function getPackageProviders($app)
@@ -25,6 +25,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
     protected function getEnvironmentSetUp($app)
     {
+        config()->set('cache.default', 'array');
+
         config()->set('database.default', 'testing');
         config()->set('database.connections.testing', [
             'driver' => env('DB_CONNECTION', 'mysql'),
