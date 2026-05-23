@@ -2,8 +2,8 @@
 
 namespace Omaressaouaf\LaravelStatistician\Contracts;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 abstract class OneQueryStatistician extends BaseStatistician
@@ -21,7 +21,9 @@ abstract class OneQueryStatistician extends BaseStatistician
                 ? $this->getSourceStatsFromCache($source)
                 : $this->handle($source, $result);
 
-            $this->putSourceStatsToCache($source, $sourceStats);
+            if (!$this->isSourceStatsCached($source)) {
+                $this->putSourceStatsToCache($source, $sourceStats);
+            }
 
             $stats[$source->getKey()] = $sourceStats;
         }
@@ -41,13 +43,13 @@ abstract class OneQueryStatistician extends BaseStatistician
                 continue;
             };
 
-            $builder = $this->buildQuery($builder);
+            $builder = $this->buildQuery($source, $builder);
         }
 
         return $builder->get();
     }
 
-    abstract protected function buildQuery(Builder $query): Builder;
+    abstract protected function buildQuery(Source $source, Builder $query): Builder;
 
     abstract protected function handle(Source $source, Collection $result): mixed;
 }
