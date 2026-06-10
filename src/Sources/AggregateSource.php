@@ -3,6 +3,7 @@
 namespace Omaressaouaf\LaravelStatistician\Sources;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Str;
 use Omaressaouaf\LaravelStatistician\Contracts\Source;

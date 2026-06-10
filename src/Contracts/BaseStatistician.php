@@ -38,7 +38,7 @@ abstract class BaseStatistician
         foreach ($sources as $source) {
             throw_unless(
                 $source instanceof ($this->sourceClass()),
-                new InvalidSourceForStatisticianException($this)
+                new InvalidSourceForStatisticianException(get_class($this), $this->sourceClass())
             );
         }
     }
@@ -57,5 +57,5 @@ abstract class BaseStatistician
         return $this;
     }
 
-    abstract public function sourceClass(): string;
+    abstract protected function sourceClass(): string;
 }

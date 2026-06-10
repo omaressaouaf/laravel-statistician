@@ -10,7 +10,7 @@ use Omaressaouaf\LaravelStatistician\Sources\AggregateSource;
 
 class AggregateStatistician extends OneQueryStatistician
 {
-    public function sourceClass(): string
+    protected function sourceClass(): string
     {
         return AggregateSource::class;
     }

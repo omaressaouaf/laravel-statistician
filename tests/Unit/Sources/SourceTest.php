@@ -5,6 +5,7 @@ namespace Omaressaouaf\LaravelStatistician\Tests\Unit\Sources;
 use Illuminate\Support\Facades\DB;
 use Omaressaouaf\LaravelStatistician\Enums\Aggregate;
 use Omaressaouaf\LaravelStatistician\Sources\AggregateSource;
+use Omaressaouaf\LaravelStatistician\Sources\DateGroupedAggregateSource;
 use Omaressaouaf\LaravelStatistician\Sources\PercentageChangeSource;
 use Omaressaouaf\LaravelStatistician\Tests\Models\User;
 use Omaressaouaf\LaravelStatistician\Tests\TestCase;
@@ -70,6 +71,14 @@ class SourceTest extends TestCase
         $source = new PercentageChangeSource(DB::table('orders'));
 
         $this->assertSame('orders_percentage_change', $source->getKey());
+    }
+
+    #[Test]
+    public function it_generates_default_key_for_date_grouped_aggregate_source(): void
+    {
+        $source = new DateGroupedAggregateSource(DB::table('orders'));
+
+        $this->assertSame('orders_count_by_date', $source->getKey());
     }
 
     #[Test]

@@ -11,16 +11,16 @@ use Omaressaouaf\LaravelStatistician\Sources\PercentageChangeSource;
 
 class PercentageChangeStatistician extends OneQueryStatistician
 {
-    public function sourceClass(): string
+    protected function sourceClass(): string
     {
         return PercentageChangeSource::class;
     }
 
     public function buildQuery(Source $source, Builder $query): Builder
     {
-        /** @var PercentageChangeSource $source */
         [$baselineStart, $baselineEnd, $comparisonStart, $comparisonEnd] = $this->resolvePeriods();
 
+        /** @var PercentageChangeSource $source */
         $newRecordsSubQuery = (clone $source->builder)
             ->whereDate($source->dateColumn, '>=', $comparisonStart)
             ->whereDate($source->dateColumn, '<=', $comparisonEnd)
