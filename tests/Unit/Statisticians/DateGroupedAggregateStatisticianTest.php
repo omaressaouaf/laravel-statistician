@@ -77,7 +77,7 @@ class DateGroupedAggregateStatisticianTest extends TestCase
 
         $stats = DateGroupedAggregateStatistician::fromSources(
             new DateGroupedAggregateSource(DB::table('users')),
-            new DateGroupedAggregateSource(DB::table('orders'))->keyBy('orders_by_date'),
+            (new DateGroupedAggregateSource(DB::table('orders')))->keyBy('orders_by_date'),
         )
             ->start('2025-01-01')
             ->end('2025-01-31')

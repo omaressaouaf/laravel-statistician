@@ -73,7 +73,7 @@ class PercentageChangeStatisticianTest extends TestCase
 
         $stats = PercentageChangeStatistician::fromSources(
             new PercentageChangeSource(DB::table('users')),
-            new PercentageChangeSource(DB::table('orders'))->keyBy('orders_growth'),
+            (new PercentageChangeSource(DB::table('orders')))->keyBy('orders_growth'),
         )
             ->start('2025-04-01')
             ->end('2025-04-30')
@@ -282,7 +282,7 @@ class PercentageChangeStatisticianTest extends TestCase
         Cache::flush();
 
         $usersSource = new PercentageChangeSource(DB::table('users'));
-        $ordersSource = new PercentageChangeSource(DB::table('orders'))->keyBy('orders_growth');
+        $ordersSource = (new PercentageChangeSource(DB::table('orders')))->keyBy('orders_growth');
 
         $statistician = PercentageChangeStatistician::fromSources($usersSource, $ordersSource);
 

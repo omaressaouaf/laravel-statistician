@@ -57,11 +57,11 @@ class AggregateStatisticianTest extends TestCase
 
         $stats = AggregateStatistician::fromSources(
             new AggregateSource(DB::table('users')),
-            new AggregateSource(
+            (new AggregateSource(
                 DB::table('orders'),
                 aggregate: Aggregate::SUM,
                 aggregateColumn: 'total',
-            )->keyBy('orders_total'),
+            ))->keyBy('orders_total'),
         )->get();
 
         $this->assertCount(1, DB::getQueryLog());
@@ -79,11 +79,11 @@ class AggregateStatisticianTest extends TestCase
         $this->seedOrders(10, 20, 30);
 
         $stats = AggregateStatistician::fromSources(
-            new AggregateSource(
+            (new AggregateSource(
                 DB::table('orders'),
                 aggregate: $aggregate,
                 aggregateColumn: 'total',
-            )->keyBy($key),
+            ))->keyBy($key),
         )->get();
 
         $this->assertEquals($expected, $stats[$key]);
@@ -289,11 +289,11 @@ class AggregateStatisticianTest extends TestCase
         $this->seedOrders(10, 20, 30);
 
         $usersSource = new AggregateSource(DB::table('users'));
-        $ordersSource = new AggregateSource(
+        $ordersSource = (new AggregateSource(
             DB::table('orders'),
             aggregate: Aggregate::SUM,
             aggregateColumn: 'total',
-        )->keyBy('orders_total');
+        ))->keyBy('orders_total');
 
         $statistician = AggregateStatistician::fromSources($usersSource, $ordersSource);
 
