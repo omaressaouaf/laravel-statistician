@@ -18,17 +18,17 @@ class PercentageChangeStatistician extends OneQueryStatistician
 
     public function buildQuery(Source $source, Builder $query): Builder
     {
-        [$baselineStart, $baselineEnd, $comparisonStart, $comparisonEnd] = $this->resolvePeriods();
+        [$previousStart, $previousEnd, $currentStart, $currentEnd] = $this->resolvePeriods();
 
         /** @var PercentageChangeSource $source */
         $newRecordsSubQuery = (clone $source->builder)
-            ->whereDate($source->dateColumn, '>=', $comparisonStart)
-            ->whereDate($source->dateColumn, '<=', $comparisonEnd)
+            ->whereDate($source->dateColumn, '>=', $currentStart)
+            ->whereDate($source->dateColumn, '<=', $currentEnd)
             ->selectRaw('COUNT(*) as aggregate');
 
         $oldRecordsSubQuery = (clone $source->builder)
-            ->whereDate($source->dateColumn, '>=', $baselineStart)
-            ->whereDate($source->dateColumn, '<=', $baselineEnd)
+            ->whereDate($source->dateColumn, '>=', $previousStart)
+            ->whereDate($source->dateColumn, '<=', $previousEnd)
             ->selectRaw('COUNT(*) as aggregate');
 
         return $query
@@ -42,24 +42,32 @@ class PercentageChangeStatistician extends OneQueryStatistician
     protected function resolvePeriods(): array
     {
         if ($this->startDate && $this->endDate) {
-            $baselineStart = $this->startDate->copy()->startOfDay();
-            $baselineEnd = $this->endDate->copy()->endOfDay();
-        } else {
-            $baselineStart = today()->subMonth()->startOfMonth()->startOfDay();
-            $baselineEnd = today()->subMonth()->endOfMonth()->endOfDay();
+            $currentStart = $this->startDate->copy()->startOfDay();
+            $currentEnd = $this->endDate->copy()->endOfDay();
+
+            $previousEnd = $currentStart->copy()->subDay()->endOfDay();
+            $previousStart = $previousEnd
+                ->copy()
+                ->subDays($currentStart->diffInDays($currentEnd))
+                ->startOfDay();
+
+            return [$previousStart, $previousEnd, $currentStart, $currentEnd];
         }
 
-        $comparisonStart = $baselineEnd->copy()->addDay()->startOfDay();
-        $comparisonEnd = $comparisonStart
+        $previousStart = today()->subMonth()->startOfMonth()->startOfDay();
+        $previousEnd = today()->subMonth()->endOfMonth()->endOfDay();
+
+        $currentStart = $previousEnd->copy()->addDay()->startOfDay();
+        $currentEnd = $currentStart
             ->copy()
-            ->addDays($baselineStart->diffInDays($baselineEnd))
+            ->addDays($previousStart->diffInDays($previousEnd))
             ->endOfDay();
 
-        if ($comparisonEnd->gt(today()->endOfDay())) {
-            $comparisonEnd = today()->endOfDay();
+        if ($currentEnd->gt(today()->endOfDay())) {
+            $currentEnd = today()->endOfDay();
         }
 
-        return [$baselineStart, $baselineEnd, $comparisonStart, $comparisonEnd];
+        return [$previousStart, $previousEnd, $currentStart, $currentEnd];
     }
 
     public function handle(Source $source, Collection $result): mixed

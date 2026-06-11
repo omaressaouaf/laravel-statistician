@@ -44,8 +44,8 @@ class PercentageChangeStatisticianTest extends TestCase
     {
         Carbon::setTestNow('2025-06-01');
 
-        $this->seedUsersOn('2025-04-15', 10);
-        $this->seedUsersOn('2025-05-15', 15);
+        $this->seedUsersOn('2025-03-15', 10);
+        $this->seedUsersOn('2025-04-15', 15);
 
         $stats = PercentageChangeStatistician::fromSources(
             new PercentageChangeSource(DB::table('users')),
@@ -62,11 +62,11 @@ class PercentageChangeStatisticianTest extends TestCase
     {
         Carbon::setTestNow('2025-06-01');
 
-        $this->seedUsersOn('2025-04-15', 10);
-        $this->seedUsersOn('2025-05-15', 20);
+        $this->seedUsersOn('2025-03-15', 10);
+        $this->seedUsersOn('2025-04-15', 20);
 
-        $this->seedOrdersOn('2025-04-15', 4);
-        $this->seedOrdersOn('2025-05-15', 2);
+        $this->seedOrdersOn('2025-03-15', 4);
+        $this->seedOrdersOn('2025-04-15', 2);
 
         DB::flushQueryLog();
         DB::enableQueryLog();
@@ -136,30 +136,26 @@ class PercentageChangeStatisticianTest extends TestCase
     }
 
     #[Test]
-    public function it_caps_comparison_period_at_today(): void
+    public function it_caps_current_period_at_today_when_using_default_periods(): void
     {
         Carbon::setTestNow('2025-02-15');
 
         $this->seedUsersOn('2025-01-15', 10);
         $this->seedUsersAt('2025-02-01 00:00:00', '2025-02-05 00:00:00', '2025-02-10 00:00:00', '2025-02-12 00:00:00', '2025-02-14 00:00:00');
-        $this->seedUsersAt('2025-02-20 00:00:00', '2025-02-25 00:00:00');
 
         $stats = PercentageChangeStatistician::fromSources(
             new PercentageChangeSource(DB::table('users')),
-        )
-            ->start('2025-01-01')
-            ->end('2025-01-31')
-            ->get();
+        )->get();
 
         $this->assertEquals(['users_percentage_change' => -50], $stats);
     }
 
     #[Test]
-    public function it_returns_100_when_baseline_is_zero_and_comparison_is_not(): void
+    public function it_returns_100_when_previous_period_is_zero_and_current_is_not(): void
     {
         Carbon::setTestNow('2025-06-01');
 
-        $this->seedUsersOn('2025-05-15', 5);
+        $this->seedUsersOn('2025-04-15', 5);
 
         $stats = PercentageChangeStatistician::fromSources(
             new PercentageChangeSource(DB::table('users')),
