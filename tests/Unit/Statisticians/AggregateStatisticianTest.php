@@ -156,12 +156,12 @@ class AggregateStatisticianTest extends TestCase
 
         $source = new AggregateSource(DB::table('users'));
 
-        AggregateStatistician::fromSources($source)
-            ->cacheFor(60)
-            ->get();
+        $statistician = AggregateStatistician::fromSources($source)->cacheFor(60);
 
-        $this->assertTrue(Cache::has($source->getCacheKey()));
-        $this->assertEquals(2, Cache::get($source->getCacheKey()));
+        $statistician->get();
+
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
+        $this->assertEquals(2, Cache::get($this->sourceCacheKey($statistician, $source)));
     }
 
     #[Test]
@@ -185,21 +185,79 @@ class AggregateStatisticianTest extends TestCase
     }
 
     #[Test]
-    public function it_does_not_cache_when_a_date_range_is_set(): void
+    public function it_caches_when_a_date_range_is_set(): void
     {
         Cache::flush();
 
-        User::factory()->count(2)->create();
+        User::factory()->count(2)->create(['created_at' => '2025-06-15']);
 
         $source = new AggregateSource(DB::table('users'));
 
-        AggregateStatistician::fromSources($source)
+        $statistician = AggregateStatistician::fromSources($source)
             ->start('2025-01-01')
             ->end('2025-12-31')
-            ->cacheFor(60)
-            ->get();
+            ->cacheFor(60);
 
-        $this->assertFalse(Cache::has($source->getCacheKey()));
+        $statistician->get();
+
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
+        $this->assertEquals(2, Cache::get($this->sourceCacheKey($statistician, $source)));
+    }
+
+    #[Test]
+    public function it_caches_different_date_ranges_under_separate_keys(): void
+    {
+        Cache::flush();
+
+        User::factory()->count(2)->create(['created_at' => '2025-01-15']);
+        User::factory()->count(5)->create(['created_at' => '2025-06-15']);
+
+        $source = new AggregateSource(DB::table('users'));
+
+        $januaryStatistician = AggregateStatistician::fromSources($source)
+            ->start('2025-01-01')
+            ->end('2025-01-31')
+            ->cacheFor(60);
+
+        $juneStatistician = AggregateStatistician::fromSources($source)
+            ->start('2025-06-01')
+            ->end('2025-06-30')
+            ->cacheFor(60);
+
+        $januaryStatistician->get();
+        $juneStatistician->get();
+
+        $this->assertEquals(2, Cache::get($this->sourceCacheKey($januaryStatistician, $source)));
+        $this->assertEquals(5, Cache::get($this->sourceCacheKey($juneStatistician, $source)));
+    }
+
+    #[Test]
+    public function it_clears_all_registered_cache_keys_for_a_source(): void
+    {
+        Cache::flush();
+
+        User::factory()->count(2)->create(['created_at' => '2025-01-15']);
+        User::factory()->count(5)->create(['created_at' => '2025-06-15']);
+
+        $source = new AggregateSource(DB::table('users'));
+
+        $januaryStatistician = AggregateStatistician::fromSources($source)
+            ->start('2025-01-01')
+            ->end('2025-01-31')
+            ->cacheFor(60);
+
+        $juneStatistician = AggregateStatistician::fromSources($source)
+            ->start('2025-06-01')
+            ->end('2025-06-30')
+            ->cacheFor(60);
+
+        $januaryStatistician->get();
+        $juneStatistician->get();
+
+        $januaryStatistician->clearCacheWhen(true);
+
+        $this->assertFalse(Cache::has($this->sourceCacheKey($januaryStatistician, $source)));
+        $this->assertFalse(Cache::has($this->sourceCacheKey($juneStatistician, $source)));
     }
 
     #[Test]
@@ -215,11 +273,11 @@ class AggregateStatisticianTest extends TestCase
 
         $statistician->get();
 
-        $this->assertTrue(Cache::has($source->getCacheKey()));
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
 
         $statistician->clearCacheWhen(true);
 
-        $this->assertFalse(Cache::has($source->getCacheKey()));
+        $this->assertFalse(Cache::has($this->sourceCacheKey($statistician, $source)));
     }
 
     #[Test]
@@ -237,9 +295,11 @@ class AggregateStatisticianTest extends TestCase
             aggregateColumn: 'total',
         )->keyBy('orders_total');
 
-        Cache::put($usersSource->getCacheKey(), 99, Carbon::now()->addHour());
+        $statistician = AggregateStatistician::fromSources($usersSource, $ordersSource);
 
-        $stats = AggregateStatistician::fromSources($usersSource, $ordersSource)->get();
+        Cache::put($this->sourceCacheKey($statistician, $usersSource), 99, Carbon::now()->addHour());
+
+        $stats = $statistician->get();
 
         $this->assertEquals(99, $stats['users_count']);
         $this->assertEquals(60, $stats['orders_total']);

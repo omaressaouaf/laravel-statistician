@@ -3,7 +3,9 @@
 namespace Omaressaouaf\LaravelStatistician\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Omaressaouaf\LaravelStatistician\Contracts\Source;
 use Omaressaouaf\LaravelStatistician\StatisticianServiceProvider;
+use ReflectionMethod;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -21,6 +23,14 @@ class TestCase extends \Orchestra\Testbench\TestCase
         return [
             StatisticianServiceProvider::class,
         ];
+    }
+
+    protected function sourceCacheKey(object $statistician, Source $source): string
+    {
+        $method = new ReflectionMethod($statistician, 'getSourceCacheKey');
+        $method->setAccessible(true);
+
+        return $method->invoke($statistician, $source);
     }
 
     protected function getEnvironmentSetUp($app)

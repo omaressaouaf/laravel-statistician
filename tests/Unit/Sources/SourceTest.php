@@ -89,19 +89,4 @@ class SourceTest extends TestCase
         $this->assertSame('active_users', $source->getKey());
     }
 
-    #[Test]
-    public function it_generates_cache_key(): void
-    {
-        $source = new PercentageChangeSource(DB::table('users'));
-
-        $this->assertSame('stats:percentage_change_source:users_percentage_change', $source->getCacheKey());
-    }
-
-    #[Test]
-    public function it_uses_custom_key_in_cache_key_when_key_by_is_used(): void
-    {
-        $source = (new PercentageChangeSource(DB::table('users')))->keyBy('active_users');
-
-        $this->assertSame('stats:percentage_change_source:active_users', $source->getCacheKey());
-    }
 }

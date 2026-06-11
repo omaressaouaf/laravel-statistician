@@ -36,6 +36,13 @@ class DateGroupedAggregateStatistician extends MultiQueryStatistician
         ];
     }
 
+    protected function resolveCachePeriodContext(): string
+    {
+        [$periodStart, $periodEnd] = $this->resolvePeriod();
+
+        return $periodStart->toDateString().':'.$periodEnd->toDateString();
+    }
+
     protected function resolvePeriod(): array
     {
         if ($this->startDate && $this->endDate) {

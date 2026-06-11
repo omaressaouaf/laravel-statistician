@@ -194,12 +194,12 @@ class PercentageChangeStatisticianTest extends TestCase
 
         $source = new PercentageChangeSource(DB::table('users'));
 
-        PercentageChangeStatistician::fromSources($source)
-            ->cacheFor(60)
-            ->get();
+        $statistician = PercentageChangeStatistician::fromSources($source)->cacheFor(60);
 
-        $this->assertTrue(Cache::has($source->getCacheKey()));
-        $this->assertEquals(50, Cache::get($source->getCacheKey()));
+        $statistician->get();
+
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
+        $this->assertEquals(50, Cache::get($this->sourceCacheKey($statistician, $source)));
     }
 
     #[Test]
@@ -226,23 +226,26 @@ class PercentageChangeStatisticianTest extends TestCase
     }
 
     #[Test]
-    public function it_does_not_cache_when_a_date_range_is_set(): void
+    public function it_caches_when_a_date_range_is_set(): void
     {
         Carbon::setTestNow('2025-06-01');
 
-        $this->seedUsersOn('2025-04-15', 10);
+        $this->seedUsersOn('2025-03-15', 10);
+        $this->seedUsersOn('2025-04-15', 15);
 
         Cache::flush();
 
         $source = new PercentageChangeSource(DB::table('users'));
 
-        PercentageChangeStatistician::fromSources($source)
+        $statistician = PercentageChangeStatistician::fromSources($source)
             ->start('2025-04-01')
             ->end('2025-04-30')
-            ->cacheFor(60)
-            ->get();
+            ->cacheFor(60);
 
-        $this->assertFalse(Cache::has($source->getCacheKey()));
+        $statistician->get();
+
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
+        $this->assertEquals(50, Cache::get($this->sourceCacheKey($statistician, $source)));
     }
 
     #[Test]
@@ -261,11 +264,11 @@ class PercentageChangeStatisticianTest extends TestCase
 
         $statistician->get();
 
-        $this->assertTrue(Cache::has($source->getCacheKey()));
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
 
         $statistician->clearCacheWhen(true);
 
-        $this->assertFalse(Cache::has($source->getCacheKey()));
+        $this->assertFalse(Cache::has($this->sourceCacheKey($statistician, $source)));
     }
 
     #[Test]
@@ -281,9 +284,11 @@ class PercentageChangeStatisticianTest extends TestCase
         $usersSource = new PercentageChangeSource(DB::table('users'));
         $ordersSource = new PercentageChangeSource(DB::table('orders'))->keyBy('orders_growth');
 
-        Cache::put($usersSource->getCacheKey(), 99, Carbon::now()->addHour());
+        $statistician = PercentageChangeStatistician::fromSources($usersSource, $ordersSource);
 
-        $stats = PercentageChangeStatistician::fromSources($usersSource, $ordersSource)->get();
+        Cache::put($this->sourceCacheKey($statistician, $usersSource), 99, Carbon::now()->addHour());
+
+        $stats = $statistician->get();
 
         $this->assertEquals(99, $stats['users_percentage_change']);
         $this->assertEquals(-50, $stats['orders_growth']);

@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 abstract class Source
@@ -25,13 +24,6 @@ abstract class Source
     public function getKey(): string
     {
         return $this->key ? $this->key : $this->defaultKey();
-    }
-
-    public function getCacheKey(): string
-    {
-        $sourceClassFormatted = Str::of($this::class)->classBasename()->snake();
-
-        return "stats:{$sourceClassFormatted}:{$this->getKey()}";
     }
 
     abstract protected function defaultKey(): string;

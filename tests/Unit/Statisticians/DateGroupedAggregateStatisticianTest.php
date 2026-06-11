@@ -289,11 +289,11 @@ class DateGroupedAggregateStatisticianTest extends TestCase
 
         $source = new DateGroupedAggregateSource(DB::table('users'));
 
-        DateGroupedAggregateStatistician::fromSources($source)
-            ->cacheFor(60)
-            ->get();
+        $statistician = DateGroupedAggregateStatistician::fromSources($source)->cacheFor(60);
 
-        $this->assertTrue(Cache::has($source->getCacheKey()));
+        $statistician->get();
+
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
     }
 
     #[Test]
@@ -319,7 +319,7 @@ class DateGroupedAggregateStatisticianTest extends TestCase
     }
 
     #[Test]
-    public function it_does_not_cache_when_a_date_range_is_set(): void
+    public function it_caches_when_a_date_range_is_set(): void
     {
         Carbon::setTestNow('2025-06-15');
 
@@ -329,13 +329,14 @@ class DateGroupedAggregateStatisticianTest extends TestCase
 
         $source = new DateGroupedAggregateSource(DB::table('users'));
 
-        DateGroupedAggregateStatistician::fromSources($source)
+        $statistician = DateGroupedAggregateStatistician::fromSources($source)
             ->start('2025-01-01')
             ->end('2025-06-15')
-            ->cacheFor(60)
-            ->get();
+            ->cacheFor(60);
 
-        $this->assertFalse(Cache::has($source->getCacheKey()));
+        $statistician->get();
+
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
     }
 
     #[Test]
@@ -353,11 +354,11 @@ class DateGroupedAggregateStatisticianTest extends TestCase
 
         $statistician->get();
 
-        $this->assertTrue(Cache::has($source->getCacheKey()));
+        $this->assertTrue(Cache::has($this->sourceCacheKey($statistician, $source)));
 
         $statistician->clearCacheWhen(true);
 
-        $this->assertFalse(Cache::has($source->getCacheKey()));
+        $this->assertFalse(Cache::has($this->sourceCacheKey($statistician, $source)));
     }
 
     private function seedUsersOn(string $date, int $count): void

@@ -36,6 +36,29 @@ class PercentageChangeStatistician extends OneQueryStatistician
             ->selectSub($oldRecordsSubQuery, $this->oldRecordsKey($source));
     }
 
+    public function handle(Source $source, Collection $result): mixed
+    {
+        /** @var PercentageChangeSource $source */
+        $row = $result->first();
+
+        return $this->percentageChange(
+            $row->{$this->newRecordsKey($source)},
+            $row->{$this->oldRecordsKey($source)},
+        );
+    }
+
+    protected function resolveCachePeriodContext(): string
+    {
+        [$previousStart, $previousEnd, $currentStart, $currentEnd] = $this->resolvePeriods();
+
+        return implode(':', [
+            $previousStart->toDateString(),
+            $previousEnd->toDateString(),
+            $currentStart->toDateString(),
+            $currentEnd->toDateString(),
+        ]);
+    }
+
     /**
      * @return array{0: Carbon, 1: Carbon, 2: Carbon, 3: Carbon}
      */
@@ -70,25 +93,14 @@ class PercentageChangeStatistician extends OneQueryStatistician
         return [$previousStart, $previousEnd, $currentStart, $currentEnd];
     }
 
-    public function handle(Source $source, Collection $result): mixed
-    {
-        /** @var PercentageChangeSource $source */
-        $row = $result->first();
-
-        return $this->percentageChange(
-            $row->{$this->newRecordsKey($source)},
-            $row->{$this->oldRecordsKey($source)},
-        );
-    }
-
     protected function newRecordsKey(Source $source): string
     {
-        return $source->getKey().'_new';
+        return $source->getKey() . '_new';
     }
 
     protected function oldRecordsKey(Source $source): string
     {
-        return $source->getKey().'_old';
+        return $source->getKey() . '_old';
     }
 
     protected function percentageChange(int|float $new, int|float $old): float
