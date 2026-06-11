@@ -95,12 +95,12 @@ class PercentageChangeStatistician extends OneQueryStatistician
 
     protected function newRecordsKey(Source $source): string
     {
-        return $source->getKey() . '_new';
+        return $source->getKey().'_new';
     }
 
     protected function oldRecordsKey(Source $source): string
     {
-        return $source->getKey() . '_old';
+        return $source->getKey().'_old';
     }
 
     protected function percentageChange(int|float $new, int|float $old): float

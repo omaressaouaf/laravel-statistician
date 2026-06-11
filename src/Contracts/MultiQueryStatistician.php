@@ -16,7 +16,7 @@ abstract class MultiQueryStatistician extends BaseStatistician
                 ? $this->getSourceStatsFromCache($source)
                 : $this->handle($source);
 
-            if (!$this->isSourceStatsCached($source)) {
+            if (! $this->isSourceStatsCached($source)) {
                 $this->putSourceStatsToCache($source, $sourceStats);
             }
 

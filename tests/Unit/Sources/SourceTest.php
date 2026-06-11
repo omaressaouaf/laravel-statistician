@@ -88,5 +88,4 @@ class SourceTest extends TestCase
 
         $this->assertSame('active_users', $source->getKey());
     }
-
 }
