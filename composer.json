@@ -1,7 +1,7 @@
 {
     "name": "omaressaouaf/laravel-statistician",
     "version": "1.0.0",
-    "description": "",
+    "description": "A Laravel package for generating clean application statistics from Eloquent models, query builders, or plain tables",
     "keywords": [
         "omaressaouaf",
         "php",
