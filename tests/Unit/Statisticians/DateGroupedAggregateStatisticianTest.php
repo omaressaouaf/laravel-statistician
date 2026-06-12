@@ -65,6 +65,25 @@ class DateGroupedAggregateStatisticianTest extends TestCase
     }
 
     #[Test]
+    public function it_returns_clean_rows_when_using_a_model_class(): void
+    {
+        Carbon::setTestNow('2025-01-31');
+
+        $this->seedUsersOn('2025-01-10', 2);
+
+        $stats = DateGroupedAggregateStatistician::fromSources(
+            new DateGroupedAggregateSource(User::class),
+        )
+            ->start('2025-01-01')
+            ->end('2025-01-31')
+            ->get();
+
+        $row = $stats['users_count_by_date']['data'][0];
+
+        $this->assertSame(['count' => 2, 'date_label' => '10-01-2025'], $row);
+    }
+
+    #[Test]
     public function it_returns_grouped_data_for_multiple_sources(): void
     {
         Carbon::setTestNow('2025-01-31');

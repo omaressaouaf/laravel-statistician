@@ -2,6 +2,7 @@
 
 namespace Omaressaouaf\LaravelStatistician\Statisticians;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Omaressaouaf\LaravelStatistician\Contracts\MultiQueryStatistician;
 use Omaressaouaf\LaravelStatistician\Contracts\Source;
@@ -31,9 +32,14 @@ class DateGroupedAggregateStatistician extends MultiQueryStatistician
             ->get();
 
         return [
-            'data' => $result->map(fn ($row) => (array) $row)->all(),
+            'data' => $result->map(fn ($row) => $this->normalizeQueryRow($row))->all(),
             'date_format' => $dateFormat['label_format'],
         ];
+    }
+
+    protected function normalizeQueryRow(object $row): array
+    {
+        return $row instanceof Model ? $row->getAttributes() : (array) $row;
     }
 
     protected function resolveCachePeriodContext(): string

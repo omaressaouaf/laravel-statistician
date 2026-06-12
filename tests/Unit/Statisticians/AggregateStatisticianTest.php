@@ -148,6 +148,23 @@ class AggregateStatisticianTest extends TestCase
     }
 
     #[Test]
+    public function it_filters_by_date_range_when_using_a_model_class(): void
+    {
+        User::factory()->create(['created_at' => '2025-01-01 00:00:00']);
+        User::factory()->create(['created_at' => '2025-03-15 00:00:00']);
+        User::factory()->create(['created_at' => '2025-06-01 00:00:00']);
+
+        $stats = AggregateStatistician::fromSources(
+            new AggregateSource(User::class),
+        )
+            ->start('2025-02-01')
+            ->end('2025-04-30')
+            ->get();
+
+        $this->assertEquals(['users_count' => 1], $stats);
+    }
+
+    #[Test]
     public function it_caches_results_when_cache_for_is_used(): void
     {
         Cache::flush();

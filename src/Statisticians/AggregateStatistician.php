@@ -21,11 +21,11 @@ class AggregateStatistician extends OneQueryStatistician
         $subQuery = (clone $source->builder)
             ->when(
                 $this->startDate,
-                fn (Builder $query) => $query->whereDate($source->dateColumn, '>=', $this->startDate)
+                fn ($query) => $query->whereDate($source->dateColumn, '>=', $this->startDate)
             )
             ->when(
                 $this->endDate,
-                fn (Builder $query) => $query->whereDate($source->dateColumn, '<=', $this->endDate)
+                fn ($query) => $query->whereDate($source->dateColumn, '<=', $this->endDate)
             )
             ->selectRaw(sprintf(
                 '%s(%s) as aggregate',
