@@ -1,5 +1,8 @@
 # Laravel Statistician
-# Laravel Statistician [![Latest Stable Version](https://img.shields.io/packagist/v/omaressaouaf/laravel-statistician.svg)](https://packagist.org/packages/omaressaouaf/laravel-statistician) [![License](https://img.shields.io/github/license/omaressaouaf/laravel-statistician)](LICENSE) [![Tests](https://github.com/omaressaouaf/laravel-statistician/actions/workflows/tests.yml/badge.svg)](https://github.com/omaressaouaf/laravel-statistician/actions/workflows/tests.yml)
+
+[![Latest Stable Version](https://img.shields.io/packagist/v/omaressaouaf/laravel-statistician.svg)(https://packagist.org/packages/omaressaouaf/laravel-statistician) 
+[![License](https://img.shields.io/github/license/omaressaouaf/laravel-statistician)](LICENSE)
+[![Tests](https://github.com/omaressaouaf/laravel-statistician/actions/workflows/tests.yml/badge.svg)](https://github.com/omaressaouaf/laravelstatistician/actions/workflows/tests.yml)
 
 A Laravel package for generating **clean application statistics** from Eloquent models, query builders, or plain tables.
 
